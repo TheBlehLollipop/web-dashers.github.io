@@ -356,14 +356,26 @@ class PlayerObject {
       deaths: 0
     };
   }
-  updateGroundRotation(delta) {
-  this._rotation += delta * 0.15;
-  for (const layer of this._playerLayers) {
-    if (layer && layer.sprite && layer.sprite.visible) {
-      layer.sprite.setRotation(this._rotation);
+updateGroundRotation(delta) {
+    if (this.p.isBird || this.p.isUfo) {
+      this._rotation = 0;
+      if (this._birdLayers) {
+        for (const layer of this._birdLayers) {
+          if (layer && layer.sprite) layer.sprite.setRotation(0);
+        }
+      }
+      for (const layer of this._playerLayers) {
+        if (layer && layer.sprite) layer.sprite.setRotation(0);
+      }
+      return;
+    }
+    this._rotation += delta * 0.15;
+    for (const layer of this._playerLayers) {
+      if (layer && layer.sprite && layer.sprite.visible) {
+        layer.sprite.setRotation(this._rotation);
+      }
     }
   }
-}
   _createSprites() {
     const spriteY = this._scene;
     const spriteX = b(this.p.y);
@@ -2149,11 +2161,16 @@ if (this.p.isFlying || this.p.isUfo) {
     return out + out;
   }
 updateGroundRotation(_0x5c24f7) {
-    // 1. UFO Slope Fix: Keep the saucer completely flat so layers don't break apart
-    if (this.p.isUfo) {
+    // 1. UFO Slope Fix: Keep everything completely flat so the cube doesn't slide out
+    if (this.p.isBird || this.p.isUfo) {
       this._rotation = 0;
       if (this._birdLayers) {
         for (const layer of this._birdLayers) {
+          if (layer && layer.sprite) layer.sprite.setRotation(0);
+        }
+      }
+      if (this._playerLayers) {
+        for (const layer of this._playerLayers) {
           if (layer && layer.sprite) layer.sprite.setRotation(0);
         }
       }
@@ -2161,7 +2178,7 @@ updateGroundRotation(_0x5c24f7) {
     }
 
     // 2. Slope Logic for Cube, Robot, and Swing
-    if (this._lastLandObject && this._lastLandObject.type === "slope") {
+    if (this._lastLandObject && (this._lastLandObject.type === "slope" || this._lastLandObject.type === 2)) {
       let slopeAngleRad = Math.atan2(
         this._lastLandObject.hypoBy - this._lastLandObject.hypoAy,
         this._lastLandObject.hypoBx - this._lastLandObject.hypoAx
@@ -2196,6 +2213,12 @@ updateGroundRotation(_0x5c24f7) {
       }
       return;
     }
+    
+    let _0x183c2a = this.convertToClosestRotation();
+    let _0x108955 = 0.47250000000000003;
+    let _0x17a9a6 = Math.min(_0x5c24f7 * 1, _0x108955 * _0x5c24f7);
+    this._rotation = this.slerp2D(this._rotation, _0x183c2a, _0x17a9a6);
+  }
     
     let _0x183c2a = this.convertToClosestRotation();
     let _0x108955 = 0.47250000000000003;
